@@ -1,5 +1,6 @@
 <template>
   <div class="home">
+    <el-button>Test</el-button>
   </div>
 </template>
 
@@ -8,7 +9,6 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   name: "Home",
-  components: {
-  },
+  components: {},
 });
 </script>

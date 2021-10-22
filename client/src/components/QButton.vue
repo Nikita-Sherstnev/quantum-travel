@@ -1,18 +1,13 @@
 <template>
-  <div class="hello">
 
-  </div>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "HelloWorld",
-
+  name: "QButton",
 });
 </script>
 
-<style scoped lang="scss">
-
-</style>
+<style scoped lang="scss"></style>
