@@ -6,7 +6,7 @@ import numpy as np
 # Access parameters
 PARAMS = {
     "remote_addr": "https://remote.qboard.tech",
-    "access_key": "a0062a5e-d3ae-4a17-8499-f4d40358de94"
+    "access_key": "pass"
 }
 
 
@@ -79,5 +79,5 @@ if __name__ == '__main__':
     spins, energy = s.solve_qubo(Q, timeout=30)
     print(spins, energy)
 
-    for spin in spins:
-        print('{0:.0f}'.format(spin))
+    # for spin in spins:
+    #     print('{0:.0f}'.format(spin))
