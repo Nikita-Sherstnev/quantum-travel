@@ -6,6 +6,7 @@ import installElementPlus from "./plugins/element";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./styles/gilroy.scss";
+import "./styles/srollbar.scss";
 
 const app = createApp(App);
 
