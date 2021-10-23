@@ -14,25 +14,29 @@ def qubo_tsp(array, metro_count) -> np.ndarray:
     # Количество станций метро
     n = metro_count
     # Штраф за нарушение органичений
-    penalty_A = 15
-    penalty_B = 25
+    penalty_a = 1
+    penalty_b = 4
 
     q = np.zeros((n, n, n, n))
 
     # Каждая станция встречается один раз в цикле
     for i in range(n):
-        q[i, :, i, :] = penalty_A * (np.ones((n, n)) - np.eye(n))
+        q[i, :, i, :] = penalty_a * (np.ones((n, n)) - np.eye(n))
 
     # Добавление весов
     for el in array:
-        q[el[0], :, el[1], :] = penalty_B * el[2] * (np.ones((n, n)) - np.eye(n))
+        q[el[0], :, el[1], :] = penalty_b * el[2] * (np.ones((n, n)) - np.eye(n))
 
     # Станция в j цикле не может встретиться в другом цикле с таким же номер
     for i in range(n):
-        q[:, i, :, i] = penalty_A * (np.ones((n, n)) - np.eye(n))
+        q[:, i, :, i] = penalty_a * (np.ones((n, n)) - np.eye(n))
 
     # Раскрывает 4-матрицу в 2-матрицу
     return q.reshape((n * n, n * n))
+
+
+def callback(cb_type, energy, spins):
+    print(cb_type, energy, spins)
 
 
 if __name__ == '__main__':
@@ -61,12 +65,19 @@ if __name__ == '__main__':
     np.save("adjacency.npy", nodes)
 
     # Инициализируем Solver
-    s = Solver(mode="remote:simcim", params=PARAMS)
+    s = Solver(mode="remote:gurobi", params=PARAMS)
 
     # Определяем матрицу QUBO
     Q = qubo_tsp(nodes, 5)
+
+    i_lower = np.tril_indices(25, -1)
+    Q[i_lower] = Q.T[i_lower]
+
     np.save("Q.npy", Q)
 
     # Получаем результат
     spins, energy = s.solve_qubo(Q, timeout=30)
     print(spins, energy)
+
+    for spin in spins:
+        print('{0:.0f}'.format(spin))
