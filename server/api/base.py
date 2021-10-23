@@ -61,3 +61,32 @@ class ApiResource(Resource):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+
+class BaseArgument(reqparse.Argument):
+    """
+    Request Argument class.
+    Exception handler overridden to raise `HTTPException` errors.
+    """
+
+    def handle_validation_error(self, error, bundle_errors):
+        if not isinstance(error, HTTPException):
+            return super().handle_validation_error(error, bundle_errors)
+        if current_app.config.get('BUNDLE_ERRORS', False) or bundle_errors:
+            return error, error.description
+        raise error
+
+
+class RequestParser(reqparse.RequestParser):
+    """
+    Parses request arguments using `BaseArgument` by default.
+    """
+
+    def __init__(self, argument_class=None, namespace_class=reqparse.Namespace,
+                 trim=False, bundle_errors=False):
+        if argument_class is None:
+            argument_class = BaseArgument
+        super().__init__(argument_class, namespace_class, trim, bundle_errors)
+
+    def parse_args(self, req=None, strict=False, http_error_code=422):
+        return super().parse_args(req, strict, http_error_code)
