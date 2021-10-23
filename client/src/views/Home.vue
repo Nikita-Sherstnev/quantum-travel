@@ -1,13 +1,13 @@
 <template>
   <div class="q-home">
     <q-map class="q-home__map" @select="select"></q-map>
-    <div class="q-home__left q-left" v-if="selected.ref.name !== '' || true">
-      <div class="q-left__title">
+    <div class="q-home__right q-right" v-if="isShow">
+      <div class="q-right__title">
         <i class="fas fa-subway"></i>
         {{ selected.ref.name }}
       </div>
 
-      <nav class="q-left__nav">
+      <nav class="q-right__nav">
         <q-nav-button
           icon="fas fa-utensils"
           label="кафе"
@@ -31,18 +31,50 @@
         ></q-nav-button>
       </nav>
 
-      <div class="q-left__input-wrapper">
-        <i class="fas fa-search q-left__input-icon"></i>
-        <input type="text" class="q-left__input" v-model="search" />
+      <div class="q-right__input-wrapper">
+        <i class="fas fa-search q-right__input-icon"></i>
+        <input type="text" class="q-right__input" v-model="search" />
       </div>
 
-      <div class="q-left__items">
+      <div class="q-right__items">
         <q-item-card
           v-for="item in data"
           :key="item.id"
           :name="item.name"
           :desc="item.description"
+          :active="isActive(item.id)"
+          @click="() => togglePlace(item)"
         />
+      </div>
+    </div>
+    <div class="q-home__left q-left" v-if="isShow">
+      <div class="q-left__title">
+        <i class="fas fa-route"></i>
+        Ваш маршрут
+      </div>
+
+      <div class="q-left__route">
+        <el-timeline v-if="route.length !== 0">
+          <el-timeline-item
+            v-for="(item, index) in route"
+            :key="index"
+            timestamp="10 минут"
+            placement="top"
+            color="#FF6A00"
+          >
+            <q-route-card
+              :name="item"
+              :items="
+                places
+                  .filter((el) => el.metro.name === item)
+                  .map((el) => el.item)
+              "
+            ></q-route-card>
+          </el-timeline-item>
+        </el-timeline>
+        <div class="q-left__none" v-else>
+          <el-empty description="Вы ничего не выбрали"></el-empty>
+        </div>
       </div>
     </div>
   </div>
@@ -53,16 +85,22 @@ import { computed, defineComponent, reactive, ref } from "vue";
 import QMap from "@/components/QMap.vue";
 import QItemCard from "@/components/QItemCard.vue";
 import QNavButton from "@/components/QNavButton.vue";
+import QRouteCard from "@/components/QRouteCard.vue";
 
-interface Item {
+export interface Item {
   id: number;
   name: string;
   description: string;
 }
 
+interface Station {
+  name: string;
+  coords: number[];
+}
+
 export default defineComponent({
   name: "Home",
-  components: { QNavButton, QItemCard, QMap },
+  components: { QRouteCard, QNavButton, QItemCard, QMap },
   setup() {
     const selected = reactive({ ref: { name: "", coords: [] as number[] } });
 
@@ -80,11 +118,20 @@ export default defineComponent({
         locData = dataSport.value;
       }
 
-      return locData.filter(
-        (item) =>
-          item.name.includes(search.value) ||
-          item.description.includes(search.value)
-      );
+      return locData
+        .filter(
+          (item) =>
+            item.name.includes(search.value) ||
+            item.description.includes(search.value)
+        )
+        .filter(
+          (item) =>
+            places.value.filter((el) => el.item.id === item.id).length === 0 ||
+            places.value.filter(
+              (el) =>
+                el.item.id === item.id && selected.ref.name === el.metro.name
+            ).length === 1
+        );
     });
 
     const search = ref("");
@@ -114,7 +161,7 @@ export default defineComponent({
         });
     };
 
-    const select = (e: { name: string; coords: number[] }) => {
+    const select = (e: Station) => {
       selected.ref = e;
       load("кафе", e.coords, (data) => (dataFood.value = data));
       load(
@@ -130,13 +177,49 @@ export default defineComponent({
       currentTab.value = val;
     };
 
+    const places = ref<{ item: Item; metro: Station }[]>([]);
+
+    const isActive = (id: number) => {
+      return places.value.filter((item) => item.item.id === id).length === 1;
+    };
+
+    const togglePlace = (newItem: Item) => {
+      if (
+        places.value.filter((item) => item.item.id === newItem.id).length > 0
+      ) {
+        places.value = places.value.filter(
+          (item) => item.item.id !== newItem.id
+        );
+      } else {
+        places.value.push({ item: newItem, metro: selected.ref });
+      }
+    };
+
+    const route = computed<string[]>(() => {
+      return [...new Set(places.value.map((item) => item.metro.name))];
+    });
+
+    console.log(route);
+
+    const isShow = computed(() => {
+      return selected.ref.name !== "" || true;
+    });
+
     return {
       selected,
       select,
       dataFood,
       data,
 
+      route,
+
+      isShow,
+
       search,
+
+      places,
+      togglePlace,
+      isActive,
 
       currentTab,
       nav,
@@ -158,17 +241,55 @@ export default defineComponent({
     position: relative;
   }
 
+  &__right,
   &__left {
-    position: absolute;
-    top: 15px;
-    right: 15px;
     height: calc(100% - 70px);
     width: 340px;
     z-index: 999;
+    position: absolute;
+  }
+
+  &__right {
+    top: 15px;
+    right: 15px;
+  }
+
+  &__left {
+    top: 15px;
+    left: 15px;
   }
 }
 
 .q-left {
+  background: #fff;
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 2px 2px 15px 0 rgba(#000, 0.25);
+  overflow: hidden;
+
+  &__title {
+    font-weight: bolder;
+    text-transform: capitalize;
+    font-size: 1.3em;
+    text-align: center;
+  }
+
+  &__route {
+    margin-top: 20px;
+    height: calc(100% - 50px);
+    width: 100%;
+  }
+
+  &__none {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.q-right {
   background: #fff;
   border-radius: 15px;
   padding: 15px;

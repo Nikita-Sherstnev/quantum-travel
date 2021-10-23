@@ -1,6 +1,6 @@
 <template>
-  <div class="q-item-card">
-    <div class="q-item-card__icon"></div>
+  <div class="q-item-card" :class="{ active }">
+    <div class="q-item-card__img"></div>
     <div class="q-item-card__name">{{ name }}</div>
     <div class="q-item-card__desc">{{ desc }}</div>
   </div>
@@ -20,6 +20,10 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    active: {
+      type: Boolean,
+      required: true,
+    },
   },
 });
 </script>
@@ -33,6 +37,14 @@ export default defineComponent({
   margin: 15px 7px;
   padding: 15px;
   text-align: left;
+  background: #fff;
+  transition: 250ms;
+
+  &.active {
+    background: rgba(#269ef1, 0.15);
+    border: 1px solid rgba(#269ef1, 0.55);
+    box-shadow: 0 1px 5px 0 rgba(#000, 0.1);
+  }
 
   &__name {
     font-weight: 500;
@@ -41,7 +53,7 @@ export default defineComponent({
   }
 
   &__desc {
-    color: rgba(#000, 0.6)
+    color: rgba(#000, 0.6);
   }
 }
 </style>
