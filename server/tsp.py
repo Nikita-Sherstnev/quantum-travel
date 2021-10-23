@@ -16,3 +16,23 @@ for i in range(0, ins.dim):
 pos = {k: v for k, v in enumerate(ins.coord)}
 
 draw_graph(G, colors, pos)
+
+aqua_globals.random_seed = np.random.default_rng(123)
+seed = 10598
+backend = Aer.get_backend('statevector_simulator')
+quantum_instance = QuantumInstance(backend, seed_simulator=seed, seed_transpiler=seed)
+
+spsa = SPSA(maxiter=300)
+ry = TwoLocal(qubitOp.num_qubits, 'ry', 'cz', reps=5, entanglement='linear')
+vqe = VQE(qubitOp, ry, spsa, quantum_instance=quantum_instance)
+
+result = vqe.run(quantum_instance)
+
+print('energy:', result.eigenvalue.real)
+print('time:', result.optimizer_time)
+x = sample_most_likely(result.eigenstate)
+print('feasible:', tsp.tsp_feasible(x))
+z = tsp.get_tsp_solution(x)
+print('solution:', z)
+print('solution objective:', tsp.tsp_value(z, ins.w))
+draw_tsp_solution(G, z, colors, pos)
