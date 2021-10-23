@@ -1,8 +1,9 @@
 <template>
   <div class="q-home">
     <q-map class="q-home__map" @select="select"></q-map>
-    <div class="q-home__left q-left" v-if="selected.ref.name !== ''">
+    <div class="q-home__left q-left" v-if="selected.ref.name !== '' || true">
       <div class="q-left__title">
+        <i class="fas fa-subway"></i>
         {{ selected.ref.name }}
       </div>
 
@@ -11,21 +12,29 @@
           icon="fas fa-utensils"
           label="кафе"
           color="ffbf13"
+          :active="currentTab === 'food'"
           @click="() => nav('food')"
         ></q-nav-button>
         <q-nav-button
           icon="fas fa-landmark"
           label="интересно"
           color="6C3DF1FF"
+          :active="currentTab === 'interesting'"
           @click="() => nav('interesting')"
         ></q-nav-button>
         <q-nav-button
           icon="fas fa-running"
           label="спорт"
           color="81d33f"
+          :active="currentTab === 'sport'"
           @click="() => nav('sport')"
         ></q-nav-button>
       </nav>
+
+      <div class="q-left__input-wrapper">
+        <i class="fas fa-search q-left__input-icon"></i>
+        <input type="text" class="q-left__input" v-model="search" />
+      </div>
 
       <div class="q-left__items">
         <q-item-card
@@ -57,17 +66,28 @@ export default defineComponent({
   setup() {
     const selected = reactive({ ref: { name: "", coords: [] as number[] } });
 
-    const data = ref([] as Item[]);
     const dataFood = ref([] as Item[]);
     const dataInteresting = ref([] as Item[]);
     const dataSport = ref([] as Item[]);
 
-    const dataFinal = computed(() => {
-      if (data.value.length === 0) {
-        return data;
+    const data = computed(() => {
+      let locData = [];
+      if (currentTab.value === "food") {
+        locData = dataFood.value;
+      } else if (currentTab.value === "interesting") {
+        locData = dataInteresting.value;
+      } else {
+        locData = dataSport.value;
       }
-      return dataFood;
+
+      return locData.filter(
+        (item) =>
+          item.name.includes(search.value) ||
+          item.description.includes(search.value)
+      );
     });
+
+    const search = ref("");
 
     const load = (
       text: string,
@@ -105,14 +125,9 @@ export default defineComponent({
       load("спорт", e.coords, (data) => (dataSport.value = data));
     };
 
-    const nav = (val: string) => {
-      if (val === "food") {
-        data.value = dataFood.value;
-      } else if (val === "interesting") {
-        data.value = dataInteresting.value;
-      } else if (val === "sport") {
-        data.value = dataSport.value;
-      }
+    const currentTab = ref<"food" | "interesting" | "sport">("food");
+    const nav = (val: "food" | "interesting" | "sport") => {
+      currentTab.value = val;
     };
 
     return {
@@ -120,8 +135,11 @@ export default defineComponent({
       select,
       dataFood,
       data,
+
+      search,
+
+      currentTab,
       nav,
-      dataFinal,
     };
   },
 });
@@ -168,12 +186,45 @@ export default defineComponent({
     display: flex;
     justify-content: space-around;
     align-items: center;
-    margin: 20px auto 5px auto;
+    margin: 20px auto 15px auto;
   }
 
   &__items {
-    height: calc(100% - 105px);
+    height: calc(100% - 115px);
     overflow-y: auto;
+  }
+
+  &__input-wrapper {
+    height: 36px;
+    width: 100%;
+    position: relative;
+    box-sizing: border-box;
+    margin: 22px auto 12px auto;
+  }
+
+  &__input-icon {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    color: rgba(#000, 0.6);
+  }
+
+  &__input {
+    width: calc(100% - 45px);
+    height: calc(100% - 4px);
+    border-radius: 12px;
+    outline: none;
+    border: 1px solid rgba(#000, 0.15);
+    box-shadow: 0 2px 5px 0 rgba(#000, 0.15);
+    padding: 2px 5px 2px 40px;
+    font-weight: 500;
+    font-size: 1.1em;
+    transition: 250ms;
+
+    &:focus {
+      border: 1px solid rgba(#269ef1, 0.7);
+      box-shadow: 0 1px 3px 0 rgba(#000, 0.25);
+    }
   }
 }
 </style>

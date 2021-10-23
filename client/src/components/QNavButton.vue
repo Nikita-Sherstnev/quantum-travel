@@ -4,7 +4,7 @@
     :class="{ active }"
     :style="{ ['--q-bg-color']: `#${color}` }"
   >
-    <div class="q-nav-button__icon">
+    <div class="q-nav-button__icon" :class="{ active }">
       <i :class="icon"></i>
     </div>
     <div class="q-nav-button__label">{{ label }}</div>
@@ -54,6 +54,7 @@ export default defineComponent({
     border-radius: 5px;
     left: calc(50% - 15px);
     box-shadow: 0 0 10px 0 var(--q-bg-color);
+    transition: 250ms;
   }
 
   &__icon {
@@ -71,20 +72,21 @@ export default defineComponent({
     box-shadow: 0 2px 10px 0 rgba(#000, 0.15);
     transition: 250ms;
 
+    &.active,
     &:hover {
       color: var(--q-bg-color);
       background: #fff;
-      transform: scale(1.1);
       box-shadow: 0 0 10px -2px var(--q-bg-color);
     }
   }
 
   &__label {
-    height: 20px;
-    line-height: 20px;
+    height: 25px;
+    line-height: 25px;
     width: 100%;
     font-size: 0.9em;
     text-transform: capitalize;
+    padding-top: 3px;
   }
 }
 </style>
