@@ -1,94 +1,93 @@
 <template>
   <div class="q-home">
     <q-map class="q-home__map" @select="select"></q-map>
-    <div class="q-home__overlay q-overlay">
-      <div class="q-home__right q-right" v-if="isShow">
-        <div class="q-right__title">
-          <i class="fas fa-subway"></i>
-          {{ selected.ref.name }}
-        </div>
 
-        <nav class="q-right__nav">
-          <q-nav-button
-            icon="fas fa-utensils"
-            label="кафе"
-            color="ffbf13"
-            :active="currentTab === 'food'"
-            @click="() => nav('food')"
-          ></q-nav-button>
-
-          <q-nav-button
-            icon="fas fa-landmark"
-            label="интересно"
-            color="6C3DF1FF"
-            :active="currentTab === 'interesting'"
-            @click="() => nav('interesting')"
-          ></q-nav-button>
-
-          <q-nav-button
-            icon="fas fa-running"
-            label="спорт"
-            color="81d33f"
-            :active="currentTab === 'sport'"
-            @click="() => nav('sport')"
-          ></q-nav-button>
-        </nav>
-
-        <div class="q-right__input-wrapper">
-          <i class="fas fa-search q-right__input-icon"></i>
-          <input type="text" class="q-right__input" v-model="search" />
-        </div>
-
-        <div class="q-right__items">
-          <q-item-card
-            v-for="item in data"
-            :key="item.id"
-            :name="item.name"
-            :desc="item.description"
-            :active="isActive(item.id)"
-            @click="() => togglePlace(item)"
-          />
-        </div>
+    <div class="q-home__right q-right" v-if="isShow">
+      <div class="q-right__title">
+        <i class="fas fa-subway"></i>
+        {{ selected.ref.name }}
       </div>
 
-      <div class="q-home__left q-left" v-if="isShow">
-        <div class="q-left__title">
-          <i class="fas fa-route"></i>
-          Ваш маршрут
-        </div>
+      <nav class="q-right__nav">
+        <q-nav-button
+          icon="fas fa-utensils"
+          label="кафе"
+          color="ffbf13"
+          :active="currentTab === 'food'"
+          @click="() => nav('food')"
+        ></q-nav-button>
 
-        <div class="q-left__route">
-          <el-timeline v-if="route.length !== 0">
-            <el-timeline-item
-              v-for="(item, index) in route"
-              :key="index"
-              timestamp="10 минут"
-              placement="top"
-              color="#FF6A00"
-            >
-              <q-route-card
-                :name="item"
-                :items="
-                  places
-                    .filter((el) => el.metro.name === item)
-                    .map((el) => el.item)
-                "
-              ></q-route-card>
-            </el-timeline-item>
-          </el-timeline>
+        <q-nav-button
+          icon="fas fa-landmark"
+          label="интересно"
+          color="6C3DF1FF"
+          :active="currentTab === 'interesting'"
+          @click="() => nav('interesting')"
+        ></q-nav-button>
 
-          <div class="q-left__none" v-else>
-            <el-empty description="Вы ничего не выбрали"></el-empty>
-          </div>
-        </div>
+        <q-nav-button
+          icon="fas fa-running"
+          label="спорт"
+          color="81d33f"
+          :active="currentTab === 'sport'"
+          @click="() => nav('sport')"
+        ></q-nav-button>
+      </nav>
+
+      <div class="q-right__input-wrapper">
+        <i class="fas fa-search q-right__input-icon"></i>
+        <input type="text" class="q-right__input" v-model="search" />
       </div>
 
-      <div class="q-home__app-bar q-app-bar"></div>
-
-      <div class="q-home__footer q-footer">
-        <img src="../assets/logo.svg" alt="logo" class="q-footer__logo" />
-        <div class="q-footer__text">Цифровой прорыв 2021 - РОСАТОМ</div>
+      <div class="q-right__items">
+        <q-item-card
+          v-for="item in data"
+          :key="item.id"
+          :name="item.name"
+          :desc="item.description"
+          :active="isActive(item.id)"
+          @click="() => togglePlace(item)"
+        />
       </div>
+    </div>
+
+    <div class="q-home__left q-left" v-if="isShow">
+      <div class="q-left__title">
+        <i class="fas fa-route"></i>
+        Ваш маршрут
+      </div>
+
+      <div class="q-left__route">
+        <el-timeline v-if="route.length !== 0">
+          <el-timeline-item
+            v-for="(item, index) in route"
+            :key="index"
+            timestamp="10 минут"
+            placement="top"
+            color="#FF6A00"
+          >
+            <q-route-card
+              :name="item"
+              :items="
+                places
+                  .filter((el) => el.metro.name === item)
+                  .map((el) => el.item)
+              "
+            ></q-route-card>
+          </el-timeline-item>
+        </el-timeline>
+
+        <div class="q-left__none" v-else>
+          <el-empty description="Вы ничего не выбрали"></el-empty>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-home__app-bar q-app-bar"></div>
+
+    <div class="q-home__footer q-footer">
+      <img src="../assets/logo.svg" alt="logo" class="q-footer__logo" />
+      <div class="q-footer__text">Цифровой прорыв 2021 - РОСАТОМ</div>
     </div>
   </div>
 </template>
@@ -99,6 +98,7 @@ import QMap from "@/components/QMap.vue";
 import QItemCard from "@/components/QItemCard.vue";
 import QNavButton from "@/components/QNavButton.vue";
 import QRouteCard from "@/components/QRouteCard.vue";
+import { useConfirmDialog } from "@vueuse/core";
 
 export interface Item {
   id: number;
@@ -231,16 +231,22 @@ export default defineComponent({
             },
           });
 
-          console.log(multiRoute);
+          console.log("-->", multiRoute);
 
           multiRoute.model.events.add("requestsuccess", function () {
             let activeRoute = multiRoute.getActiveRoute();
-            console.log(activeRoute);
+            let mins = 15;
+
+            if (!activeRoute) {
+              mins = 15;
+            }
             mtrx.push([
               i,
               j,
               parseInt(
-                activeRoute.properties.get("duration").text.split(" ")[0]
+                activeRoute
+                  ? activeRoute.properties.get("duration").text.split(" ")[0]
+                  : mins
               ),
             ]);
           });
@@ -251,14 +257,24 @@ export default defineComponent({
         await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
-      console.log(mtrx);
+      console.log(JSON.stringify(mtrx));
+      fetch("/graph", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ graph: mtrx }),
+      })
+        .then((res) => res.json())
+        .then((res) => console.log(res));
     };
 
     watch(
       () => route,
       (val) => {
-        if (val.value.length >= 2) {
-          // sendData();
+        if (val.value.length >= 5) {
+          sendData();
         }
       },
       { deep: true }
@@ -297,41 +313,44 @@ export default defineComponent({
   &__map {
     width: 100%;
     height: 100%;
-    position: relative;
   }
 
-  &__overlay {
-    width: calc(100% - 30px);
-    height: calc(100% - 30px);
-    z-index: 999;
+  &__right,
+  &__left {
     position: absolute;
+    z-index: 999;
+    width: 340px;
+    height: calc(100% - 60px);
     top: 15px;
-    left: 15px;
-    display: grid;
-    grid-template-areas:
-      "left top right"
-      "left middle right"
-      "left footer right";
-    grid-template-columns: 340px 1fr 340px;
-    grid-template-rows: 100px 1fr 100px;
   }
 
   &__right {
-    grid-area: right;
+    right: 15px;
   }
 
   &__left {
-    grid-area: left;
+    left: 15px;
+  }
+
+  &__app-bar {
+    position: absolute;
+    z-index: 999;
+    left: calc(50% - 300px);
+    height: 80px;
+    width: 600px;
   }
 
   &__footer {
-    grid-area: footer;
+    position: absolute;
+    z-index: 999;
+    height: 80px;
+    width: 600px;
+    bottom: 15px;
+    left: calc(50% - 300px)
   }
 }
 
 .q-footer {
-  height: 100%;
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;

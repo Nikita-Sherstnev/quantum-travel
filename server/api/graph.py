@@ -47,9 +47,13 @@ class Graph(base.ApiResource):
         spins, energy = s.solve_qubo(Q, timeout=30)
 
         ans = list(chunks(list(map(int, spins.tolist())), 5))
-        res = []
+        res = set()
         
-        for a in ans:
-            res.append(a.index(0))
+        # for a in ans:
+        #     res.append(a.index(0))
 
-        return res
+        for i in nodes:
+            res.add(i[0])
+            res.add(i[1])
+
+        return list(res)
