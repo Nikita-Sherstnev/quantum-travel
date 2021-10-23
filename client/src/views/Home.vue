@@ -81,11 +81,12 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, reactive, ref } from "vue";
+import { computed, defineComponent, reactive, ref, watch } from "vue";
 import QMap from "@/components/QMap.vue";
 import QItemCard from "@/components/QItemCard.vue";
 import QNavButton from "@/components/QNavButton.vue";
 import QRouteCard from "@/components/QRouteCard.vue";
+import { useConfirmDialog } from "@vueuse/core";
 
 export interface Item {
   id: number;
@@ -142,7 +143,7 @@ export default defineComponent({
       callback: (data: Item[]) => void
     ) => {
       fetch(
-        `https://search-maps.yandex.ru/v1/?text=${text}&spn=0.552069,0.400552&ll=${coords[1]},${coords[0]}&results=10&lang=ru_RU&apikey=29ce5500-d711-4d9b-a977-e1d7d80d5394`
+        `https://search-maps.yandex.ru/v1/?text=${text}&spn=0.552069,0.400552&ll=${coords[1]},${coords[0]}&results=10&lang=ru_RU&apikey=28fa19de-4f0a-44b5-93c2-8a8d3f0efa8e`
       )
         .then((res) => {
           return res.json();
@@ -199,11 +200,57 @@ export default defineComponent({
       return [...new Set(places.value.map((item) => item.metro.name))];
     });
 
-    console.log(route);
-
     const isShow = computed(() => {
       return selected.ref.name !== "" || true;
     });
+
+    const sendData = async () => {
+      let mtrx: number[][] = [];
+      let cnt = 0;
+
+      for (let i = 0; i < route.value.length; i++) {
+        for (let j = i + 1; j < route.value.length; j++) {
+          cnt++;
+          console.log(`${i} - ${j}`);
+          let multiRoute = new (window as any).ymaps.multiRouter.MultiRoute({
+            referencePoints: [route.value[i], route.value[j]],
+            params: {
+              routingMode: "masstransit",
+            },
+          });
+
+          console.log(multiRoute);
+
+          multiRoute.model.events.add("requestsuccess", function () {
+            let activeRoute = multiRoute.getActiveRoute();
+            console.log(activeRoute);
+            mtrx.push([
+              i,
+              j,
+              parseInt(
+                activeRoute.properties.get("duration").text.split(" ")[0]
+              ),
+            ]);
+          });
+        }
+      }
+
+      while (mtrx.length !== cnt) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+
+      console.log(mtrx);
+    };
+
+    watch(
+      () => route,
+      (val) => {
+        if (val.value.length >= 2) {
+          // sendData();
+        }
+      },
+      { deep: true }
+    );
 
     return {
       selected,

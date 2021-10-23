@@ -25,31 +25,22 @@ export default defineComponent({
       (window as any).ymaps
         .geocode(myMap.getCenter(), {
           kind: "metro",
-          results: 30,
+          results: 50,
         })
         .then(function (res: any) {
-          res.geoObjects.options.set("preset", "islands#redCircleIcon");
-          res.geoObjects.events
-            // При наведении на метку показываем хинт с названием станции метро.
-            .add("click", function (event: any) {
-              var geoObject = event.get("target");
-              emit("select", {
-                name: geoObject.getPremise(),
-                coords: geoObject.geometry.getCoordinates(),
+          res.geoObjects.each((geoObject: any) => {
+            if (geoObject.getPremise()) {
+              geoObject.options.set("preset", "islands#redCircleIcon");
+              myMap.geoObjects.add(geoObject);
+              geoObject.events.add("click", function (event: any) {
+                let geoObject = event.get("target");
+                emit("select", {
+                  name: geoObject.getPremise(),
+                  coords: geoObject.geometry.getCoordinates(),
+                });
               });
-              myMap.hint.open(
-                geoObject.geometry.getCoordinates(),
-                geoObject.getPremise()
-              );
-            })
-            // Скрываем хинт при выходе курсора за пределы метки.
-            .add("mouseleave", function (event: any) {
-              myMap.hint.close(true);
-            });
-          // Добавляем коллекцию найденных геообъектов на карту.
-          myMap.geoObjects.add(res.geoObjects);
-          // Масштабируем карту на область видимости коллекции.
-          myMap.setBounds(res.geoObjects.getBounds());
+            }
+          });
         });
     };
 
