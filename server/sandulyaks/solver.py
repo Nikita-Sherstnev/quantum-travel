@@ -14,21 +14,22 @@ def qubo_tsp(array, metro_count) -> np.ndarray:
     # Количество станций метро
     n = metro_count
     # Штраф за нарушение органичений
-    penalty = 10
+    penalty_A = 15
+    penalty_B = 25
 
     q = np.zeros((n, n, n, n))
 
     # Каждая станция встречается один раз в цикле
     for i in range(n):
-        q[i, :, i, :] = penalty * (np.ones((n, n)) - np.eye(n))
+        q[i, :, i, :] = penalty_A * (np.ones((n, n)) - np.eye(n))
 
     # Добавление весов
     for el in array:
-        q[el[0], :, el[1], :] = el[2] * (np.ones((n, n)) - np.eye(n))
+        q[el[0], :, el[1], :] = penalty_B * el[2] * (np.ones((n, n)) - np.eye(n))
 
     # Станция в j цикле не может встретиться в другом цикле с таким же номер
     for i in range(n):
-        q[:, i, :, i] = penalty * (np.ones((n, n)) - np.eye(n))
+        q[:, i, :, i] = penalty_A * (np.ones((n, n)) - np.eye(n))
 
     # Раскрывает 4-матрицу в 2-матрицу
     return q.reshape((n * n, n * n))
@@ -67,5 +68,5 @@ if __name__ == '__main__':
     np.save("Q.npy", Q)
 
     # Получаем результат
-    spins, energy = s.solve_qubo(Q, target=100, timeout=30)
+    spins, energy = s.solve_qubo(Q, timeout=30)
     print(spins, energy)
