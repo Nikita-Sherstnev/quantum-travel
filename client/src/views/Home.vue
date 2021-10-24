@@ -186,7 +186,7 @@ export default defineComponent({
       callback: (data: Item[]) => void
     ) => {
       fetch(
-        `https://search-maps.yandex.ru/v1/?text=${text}&spn=0.552069,0.400552&ll=${coords[1]},${coords[0]}&results=10&lang=ru_RU&apikey=28fa19de-4f0a-44b5-93c2-8a8d3f0efa8e`
+        `https://search-maps.yandex.ru/v1/?text=${text}&spn=0.552069,0.400552&ll=${coords[1]},${coords[0]}&results=10&lang=ru_RU&apikey=e3e5a385-e483-4c85-8ba7-b3c7aa1e2283`
       )
         .then((res) => {
           return res.json();
