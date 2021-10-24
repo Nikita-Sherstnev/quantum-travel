@@ -5,3 +5,4 @@ Flask_RESTful==0.3.9
 qboard-client
 matplotlib==3.4.3
 numpy==1.21.3
+networkx==2.6.3
