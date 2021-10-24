@@ -2,7 +2,7 @@ import math
 import json
 
 from api import base
-from solver import qubo_tsp
+from solver import qubo_tsp, tsp
 
 from qboard import Solver
 import numpy as np
@@ -62,7 +62,7 @@ class Graph(base.ApiResource):
         i_lower = np.tril_indices(5, -1)
         adjacency[i_lower] = adjacency.T[i_lower]
 
-        np.save("..\\adjacency.npy", adjacency)
+        np.save("adjacency.npy", adjacency)
 
         # Инициализируем Solver
         s = Solver(mode="remote:gurobi", params=PARAMS)
@@ -70,20 +70,21 @@ class Graph(base.ApiResource):
         # Определяем матрицу QUBO
         Q = qubo_tsp(nodes, n)
 
-        np.save("..\\Q.npy", Q)
+        np.save("Q.npy", Q)
 
         i_lower = np.tril_indices(25, -1)
         Q[i_lower] = Q.T[i_lower]
         spins, energy = s.solve_qubo(Q, timeout=30)
 
         ans = list(chunks(list(map(int, spins.tolist())), 5))
-        res = set()
+        path = []
 
-        # for a in ans:
-        #     res.append(a.index(0))
-
-        for i in nodes:
-            res.add(i[0])
-            res.add(i[1])
-
-        return list(res)
+        try:
+            # Определяем номер станции по one-hot вектору
+            for a in ans:
+                path.append(a.index(1))
+        except ValueError:
+            print('Решение классическим методом.')
+            path = tsp(nodes, n)
+        
+        return [int(p) for p in path]
