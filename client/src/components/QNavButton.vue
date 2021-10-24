@@ -42,6 +42,7 @@ export default defineComponent({
   display: block;
   position: relative;
   cursor: pointer;
+  text-align: center;
 
   &.active:after {
     position: absolute;
