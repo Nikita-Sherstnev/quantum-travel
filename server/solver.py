@@ -5,8 +5,8 @@ def qubo_tsp(array, metro_count) -> np.ndarray:
     # Количество станций метро
     n = metro_count
     # Штраф за нарушение органичений
-    penalty_a = 1
-    penalty_b = 4
+    penalty_a = 10
+    penalty_b = 50
 
     q = np.zeros((n, n, n, n))
 

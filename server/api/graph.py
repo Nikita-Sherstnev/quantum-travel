@@ -36,11 +36,41 @@ class Graph(base.ApiResource):
             elif i[1] > n:
                 n = i[1]
         n += 1
+
+        # Номера станций
+        # 0 - Краснопресенская
+        # 1 - Кропоткинская
+        # 2 - Библиотека Имени Ленина
+        # 3 - Охотный ряд
+        # 4 - Третьяковская
+        # Подготавливаем матрицу весов и сохраняем
+        max = 1
+
+        for el in nodes:
+            if el[0] > max:
+                max = el[0] + 1
+
+            if el[1] > max:
+                max = el[1] + 1
+
+        adjacency_array = [[0 for x in range(max)] for y in range(max)]
+
+        for el in nodes:
+            adjacency_array[el[0]][el[1]] = el[2]
+
+        adjacency = np.asarray(adjacency_array)
+        i_lower = np.tril_indices(5, -1)
+        adjacency[i_lower] = adjacency.T[i_lower]
+
+        np.save("..\\adjacency.npy", adjacency)
+
         # Инициализируем Solver
         s = Solver(mode="remote:gurobi", params=PARAMS)
 
         # Определяем матрицу QUBO
         Q = qubo_tsp(nodes, n)
+
+        np.save("..\\Q.npy", Q)
 
         i_lower = np.tril_indices(25, -1)
         Q[i_lower] = Q.T[i_lower]
@@ -48,7 +78,7 @@ class Graph(base.ApiResource):
 
         ans = list(chunks(list(map(int, spins.tolist())), 5))
         res = set()
-        
+
         # for a in ans:
         #     res.append(a.index(0))
 
